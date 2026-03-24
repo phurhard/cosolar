@@ -1,0 +1,109 @@
+{
+  "name": "InstallerProfile",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "Company or business name"
+    },
+    "country": {
+      "type": "string",
+      "enum": [
+        "Nigeria",
+        "Ghana",
+        "Kenya",
+        "South Africa",
+        "Egypt",
+        "Morocco",
+        "Tanzania",
+        "Ethiopia",
+        "Rwanda",
+        "Uganda",
+        "Senegal",
+        "Cameroon",
+        "Ivory Coast",
+        "Other"
+      ],
+      "description": "Country of operation"
+    },
+    "state": {
+      "type": "string",
+      "description": "State or province"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "years_of_experience": {
+      "type": "number",
+      "description": "Years in solar installation business"
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Professional certifications"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "website": {
+      "type": "string",
+      "description": "Company website URL"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Company logo image URL"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Short company description"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Admin verified status"
+    },
+    "total_kva": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached total kVA installed"
+    },
+    "total_panels": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached total panels installed"
+    },
+    "total_batteries": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached total batteries installed"
+    },
+    "total_installations": {
+      "type": "number",
+      "default": 0,
+      "description": "Cached total installation count"
+    },
+    "total_carbon_offset_tons": {
+      "type": "number",
+      "default": 0,
+      "description": "Total annual CO2 offset in metric tons across all installations"
+    },
+    "total_carbon_offset_lifetime": {
+      "type": "number",
+      "default": 0,
+      "description": "Total lifetime CO2 offset in metric tons (25 years)"
+    },
+    "carbon_credit_value_usd": {
+      "type": "number",
+      "default": 0,
+      "description": "Market value of carbon credits at $15/ton"
+    }
+  },
+  "required": [
+    "company_name",
+    "country"
+  ]
+}

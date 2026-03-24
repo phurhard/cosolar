@@ -1,0 +1,133 @@
+{
+  "name": "Installation",
+  "type": "object",
+  "properties": {
+    "installer_profile_id": {
+      "type": "string",
+      "description": "Reference to InstallerProfile"
+    },
+    "country": {
+      "type": "string",
+      "enum": [
+        "Nigeria",
+        "Ghana",
+        "Kenya",
+        "South Africa",
+        "Egypt",
+        "Morocco",
+        "Tanzania",
+        "Ethiopia",
+        "Rwanda",
+        "Uganda",
+        "Senegal",
+        "Cameroon",
+        "Ivory Coast",
+        "Other"
+      ],
+      "description": "Country of installation"
+    },
+    "state": {
+      "type": "string",
+      "description": "State or province"
+    },
+    "city": {
+      "type": "string",
+      "description": "City"
+    },
+    "installation_type": {
+      "type": "string",
+      "enum": [
+        "Residential",
+        "Commercial",
+        "Industrial",
+        "Agricultural",
+        "Institutional"
+      ],
+      "description": "Type of installation"
+    },
+    "system_size_kva": {
+      "type": "number",
+      "description": "Total system size in kVA"
+    },
+    "number_of_panels": {
+      "type": "number",
+      "description": "Number of solar panels"
+    },
+    "panel_wattage": {
+      "type": "number",
+      "description": "Wattage per panel"
+    },
+    "battery_type": {
+      "type": "string",
+      "enum": [
+        "Lithium-ion",
+        "Lead-acid",
+        "Gel",
+        "AGM",
+        "LiFePO4",
+        "None"
+      ],
+      "description": "Type of battery"
+    },
+    "battery_capacity_kwh": {
+      "type": "number",
+      "description": "Total battery capacity in kWh"
+    },
+    "number_of_batteries": {
+      "type": "number",
+      "description": "Number of battery units"
+    },
+    "inverter_capacity_kva": {
+      "type": "number",
+      "description": "Inverter capacity in kVA"
+    },
+    "installation_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of installation"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Photo URLs"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "GPS latitude"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "GPS longitude"
+    },
+    "carbon_offset_tons_annual": {
+      "type": "number",
+      "description": "Estimated annual CO2 offset in metric tons (calculated: system_size_kva * 1.0 tons/year)"
+    },
+    "carbon_offset_lifetime": {
+      "type": "number",
+      "description": "Total lifetime CO2 offset in metric tons (25 year lifespan)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Approval status"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Reason if rejected"
+    }
+  },
+  "required": [
+    "country",
+    "installation_type",
+    "system_size_kva",
+    "number_of_panels"
+  ]
+}
