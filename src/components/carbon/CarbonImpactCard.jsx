@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Leaf, TrendingUp, DollarSign, TreePine, Car, Home } from 'lucide-react';
+import { Leaf, DollarSign, TreePine, Car, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CarbonImpactCard({ carbonTonsAnnual, carbonTonsLifetime, creditValue, compact = false }) {

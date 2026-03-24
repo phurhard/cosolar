@@ -2,35 +2,9 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Filter, RotateCcw } from 'lucide-react';
-
-const countries = [
-  'All Countries',
-  'Nigeria',
-  'Ghana',
-  'Kenya',
-  'South Africa',
-  'Egypt',
-  'Morocco',
-  'Tanzania',
-  'Ethiopia',
-  'Rwanda',
-  'Uganda',
-  'Senegal',
-  'Cameroon',
-  'Ivory Coast',
-  'Other'
-];
+import { COUNTRY_FILTER_OPTIONS, INSTALLATION_TYPE_FILTER_OPTIONS } from '@/lib/constants';
 
 const years = ['All Years', '2024', '2023', '2022', '2021', '2020'];
-
-const installationTypes = [
-  'All Types',
-  'Residential',
-  'Commercial',
-  'Industrial',
-  'Agricultural',
-  'Institutional'
-];
 
 export default function DashboardFilters({ filters, onFilterChange, onReset }) {
   return (
@@ -48,7 +22,7 @@ export default function DashboardFilters({ filters, onFilterChange, onReset }) {
           <SelectValue placeholder="Country" />
         </SelectTrigger>
         <SelectContent>
-          {countries.map(country => (
+          {COUNTRY_FILTER_OPTIONS.map(country => (
             <SelectItem key={country} value={country}>{country}</SelectItem>
           ))}
         </SelectContent>
@@ -76,7 +50,7 @@ export default function DashboardFilters({ filters, onFilterChange, onReset }) {
           <SelectValue placeholder="Type" />
         </SelectTrigger>
         <SelectContent>
-          {installationTypes.map(type => (
+          {INSTALLATION_TYPE_FILTER_OPTIONS.map(type => (
             <SelectItem key={type} value={type}>{type}</SelectItem>
           ))}
         </SelectContent>

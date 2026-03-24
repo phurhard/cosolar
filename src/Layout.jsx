@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
-  Sun, BarChart3, Trophy, FileText, UserPlus,
+  Sun, BarChart3, Trophy, FileText,
   Menu, X, LogOut, Shield, User
 } from 'lucide-react';
 
@@ -14,12 +14,18 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const navItems = [
+  const publicNavItems = [
     { name: 'Home', path: 'Home', icon: Sun },
-    { name: 'Dashboard', path: 'Dashboard', icon: BarChart3 },
+    { name: 'Analytics', path: 'Analytics', icon: BarChart3 },
     { name: 'Leaderboard', path: 'Leaderboard', icon: Trophy },
-    { name: 'Submit', path: 'SubmitInstallation', icon: FileText },
   ];
+  const authenticatedNavItems = user
+    ? [
+        { name: 'Submit Installation', path: 'SubmitInstallation', icon: FileText },
+        { name: 'Profile', path: 'InstallerSignup', icon: User },
+      ]
+    : [];
+  const navItems = [...publicNavItems, ...authenticatedNavItems];
 
   const isActive = (path) => {
     const pageUrl = createPageUrl(path);
@@ -93,12 +99,6 @@ export default function Layout({ children }) {
                   <Button variant="ghost" size="sm" onClick={handleSignIn}>
                     Sign In
                   </Button>
-                  <Link to={createPageUrl('InstallerSignup')}>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Register
-                    </Button>
-                  </Link>
                 </>
               )}
             </div>
@@ -159,16 +159,9 @@ export default function Layout({ children }) {
                       onClick={() => { handleSignIn(); setMobileMenuOpen(false); }}
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground w-full"
                     >
+                      <User className="w-5 h-5" />
                       Sign In
                     </button>
-                    <Link
-                      to={createPageUrl('InstallerSignup')}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground"
-                    >
-                      <UserPlus className="w-5 h-5" />
-                      Register
-                    </Link>
                   </>
                 )}
               </div>
@@ -201,16 +194,20 @@ export default function Layout({ children }) {
             <div>
               <h4 className="font-semibold text-foreground mb-4">Platform</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><Link to={createPageUrl('Dashboard')} className="hover:text-foreground">Analytics</Link></li>
+                <li><Link to={createPageUrl('Analytics')} className="hover:text-foreground">Analytics</Link></li>
                 <li><Link to={createPageUrl('Leaderboard')} className="hover:text-foreground">Leaderboard</Link></li>
-                <li><Link to={createPageUrl('SubmitInstallation')} className="hover:text-foreground">Submit Data</Link></li>
+                {user && (
+                  <li><Link to={createPageUrl('SubmitInstallation')} className="hover:text-foreground">Submit Installation</Link></li>
+                )}
               </ul>
             </div>
 
             <div>
               <h4 className="font-semibold text-foreground mb-4">Installers</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><Link to={createPageUrl('InstallerSignup')} className="hover:text-foreground">Register</Link></li>
+                {user && (
+                  <li><Link to={createPageUrl('InstallerSignup')} className="hover:text-foreground">Profile</Link></li>
+                )}
                 <li><Link to={createPageUrl('Contact')} className="hover:text-foreground">Contact Us</Link></li>
               </ul>
             </div>

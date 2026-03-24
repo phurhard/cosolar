@@ -12,13 +12,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Sun, Zap, Battery, MapPin, Loader2, CheckCircle, AlertCircle, Leaf } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { COUNTRIES, INSTALLATION_TYPES } from '@/lib/constants';
 
-const countries = [
-  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Egypt', 'Morocco',
-  'Tanzania', 'Ethiopia', 'Rwanda', 'Uganda', 'Senegal', 'Cameroon', 'Ivory Coast', 'Other'
-];
-
-const installationTypes = ['Residential', 'Commercial', 'Industrial', 'Agricultural', 'Institutional'];
 const batteryTypes = ['Lithium-ion', 'Lead-acid', 'Gel', 'AGM', 'LiFePO4', 'None'];
 
 export default function SubmitInstallation() {
@@ -57,7 +52,7 @@ export default function SubmitInstallation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['installations'] });
       toast.success('Installation submitted for review!');
-      navigate(createPageUrl('Dashboard'));
+      navigate(createPageUrl('Analytics'));
     },
     onError: () => {
       toast.error('Failed to submit installation');
@@ -159,7 +154,7 @@ export default function SubmitInstallation() {
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
-                        {countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -198,7 +193,7 @@ export default function SubmitInstallation() {
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {installationTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        {INSTALLATION_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>

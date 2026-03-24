@@ -1,21 +1,21 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { InstallerProfile as InstallerProfileAPI, Installation } from '@/api/supabaseClient';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import CarbonImpactCard from '../components/carbon/CarbonImpactCard';
 import {
-  Building2, MapPin, Clock, Award, Globe, Phone,
+  MapPin, Clock, Award, Globe, Phone,
   Zap, Sun, Battery, FileText, CheckCircle, Trophy,
   Loader2, ArrowLeft, ExternalLink, Leaf
 } from 'lucide-react';
 
 export default function InstallerProfile() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const profileId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const profileId = searchParams.get('id');
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['installer-profile', profileId],

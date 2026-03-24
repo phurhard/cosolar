@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { RequireAdmin, RequireAuth } from '@/lib/route-guards';
+import { createPageUrl } from '@/utils';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -32,16 +34,36 @@ const AuthenticatedApp = () => {
           <MainPage />
         </LayoutWrapper>
       } />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route
-          key={path}
-          path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
-        />
+      <Route path={createPageUrl('Analytics')} element={
+        <LayoutWrapper currentPageName="Analytics">
+          <Pages.Dashboard />
+        </LayoutWrapper>
+      } />
+      <Route path={createPageUrl('Dashboard')} element={<Navigate to={createPageUrl('Analytics')} replace />} />
+      {Object.entries(Pages)
+        .filter(([path]) => path !== 'Dashboard')
+        .map(([path, Page]) => (
+          <Route
+            key={path}
+            path={createPageUrl(path)}
+            element={
+              <LayoutWrapper currentPageName={path}>
+                {path === 'Admin' ? (
+                  <RequireAuth>
+                    <RequireAdmin>
+                      <Page />
+                    </RequireAdmin>
+                  </RequireAuth>
+                ) : ['SubmitInstallation', 'InstallerSignup', 'InstallerProfile'].includes(path) ? (
+                  <RequireAuth>
+                    <Page />
+                  </RequireAuth>
+                ) : (
+                  <Page />
+                )}
+              </LayoutWrapper>
+            }
+          />
       ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

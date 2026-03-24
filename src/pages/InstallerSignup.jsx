@@ -12,11 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Building2, Award, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
-const countries = [
-  'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Egypt', 'Morocco',
-  'Tanzania', 'Ethiopia', 'Rwanda', 'Uganda', 'Senegal', 'Cameroon', 'Ivory Coast', 'Other'
-];
+import { COUNTRIES } from '@/lib/constants';
 
 export default function InstallerSignup() {
   const navigate = useNavigate();
@@ -124,7 +120,7 @@ export default function InstallerSignup() {
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
-                      {countries.map(c => (
+                      {COUNTRIES.map(c => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
@@ -207,7 +203,7 @@ export default function InstallerSignup() {
                     onChange={(e) => setCertInput(e.target.value)}
                     placeholder="Add a certification"
                     className="bg-background"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
                   />
                   <Button type="button" variant="outline" onClick={addCertification}>
                     Add

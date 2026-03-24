@@ -5,24 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trophy, Loader2, Leaf } from 'lucide-react';
 import LeaderboardTable from '../components/leaderboard/LeaderboardTable';
-
-const countries = [
-  'All Countries',
-  'Nigeria',
-  'Ghana',
-  'Kenya',
-  'South Africa',
-  'Egypt',
-  'Morocco',
-  'Tanzania',
-  'Ethiopia',
-  'Rwanda',
-  'Uganda',
-  'Senegal',
-  'Cameroon',
-  'Ivory Coast',
-  'Other'
-];
+import { COUNTRY_FILTER_OPTIONS } from '@/lib/constants';
 
 export default function Leaderboard() {
   const [metric, setMetric] = useState('kva');
@@ -67,7 +50,7 @@ export default function Leaderboard() {
               <SelectValue placeholder="Filter by country" />
             </SelectTrigger>
             <SelectContent>
-              {countries.map(c => (
+              {COUNTRY_FILTER_OPTIONS.map(c => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>

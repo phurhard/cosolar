@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, UserPlus, FileText } from 'lucide-react';
+import { UserPlus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function CTASection() {
+  const { user } = useAuth();
+
   return (
     <section className="py-20 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -31,16 +34,16 @@ export default function CTASection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={createPageUrl('InstallerSignup')}>
+              <Link to={createPageUrl(user ? 'InstallerSignup' : 'Login')}>
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg rounded-xl">
                   <UserPlus className="mr-2 w-5 h-5" />
-                  Register as Installer
+                  {user ? 'Open Profile' : 'Sign In'}
                 </Button>
               </Link>
-              <Link to={createPageUrl('SubmitInstallation')}>
+              <Link to={createPageUrl(user ? 'SubmitInstallation' : 'Login')}>
                 <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 px-8 py-6 text-lg rounded-xl">
                   <FileText className="mr-2 w-5 h-5" />
-                  Submit Installation
+                  {user ? 'Submit Installation' : 'Sign In to Submit'}
                 </Button>
               </Link>
             </div>

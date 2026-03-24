@@ -62,7 +62,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Solar Analytics Dashboard
+            Solar Analytics
           </h1>
           <p className="text-muted-foreground">
             Real-time insights into Africa's solar installation landscape

@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function HeroSection({ stats }) {
+  const { user } = useAuth();
   const statCards = [
     {
       icon: Layers,
@@ -68,15 +70,15 @@ export default function HeroSection({ stats }) {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to={createPageUrl('Dashboard')}>
+              <Link to={createPageUrl('Analytics')}>
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-base rounded-xl w-full sm:w-auto">
                   <BarChart3 className="mr-2 w-5 h-5" />
-                  View Live Dashboard
+                  View Analytics
                 </Button>
               </Link>
-              <Link to={createPageUrl('SubmitInstallation')}>
+              <Link to={createPageUrl(user ? 'SubmitInstallation' : 'Login')}>
                 <Button size="lg" variant="outline" className="border-border hover:bg-secondary px-8 py-6 text-base rounded-xl w-full sm:w-auto">
-                  Register Installation
+                  {user ? 'Register Installation' : 'Sign In to Submit'}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>

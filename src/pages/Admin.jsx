@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import {
   CheckCircle, XCircle, Clock, Loader2, Download,
-  Users, Zap, Search, Leaf
+  Zap, Search, Leaf
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -29,12 +29,7 @@ export default function Admin() {
     queryFn: () => Installation.list(),
   });
 
-  const { data: installers = [] } = useQuery({
-    queryKey: ['all-installers'],
-    queryFn: () => InstallerProfile.list(),
-  });
-
-  const updateInstallationMutation = useMutation({
+  const reviewInstallationMutation = useMutation({
     mutationFn: ({ id, data }) => Installation.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-installations'] });
@@ -43,9 +38,8 @@ export default function Admin() {
     },
   });
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
-      await InstallerProfile.update(id, data);
+  const refreshProfileStatsMutation = useMutation({
+    mutationFn: async ({ id }) => {
       // Recalculate stats
       const installations = await Installation.filter({ installer_profile_id: id, status: 'approved' });
       const totalCarbonAnnual = installations.reduce((sum, i) => sum + (i.carbon_offset_tons_annual || i.system_size_kva || 0), 0);
@@ -62,23 +56,22 @@ export default function Admin() {
       await InstallerProfile.update(id, stats);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['all-installers'] });
-      toast.success('Profile updated');
+      toast.success('Installer totals refreshed');
     },
   });
 
   const handleApprove = async (installation) => {
-    await updateInstallationMutation.mutateAsync({
+    await reviewInstallationMutation.mutateAsync({
       id: installation.id,
       data: { status: 'approved' }
     });
     if (installation.installer_profile_id) {
-      await updateProfileMutation.mutateAsync({ id: installation.installer_profile_id, data: {} });
+      await refreshProfileStatsMutation.mutateAsync({ id: installation.installer_profile_id });
     }
   };
 
   const handleReject = (installation) => {
-    updateInstallationMutation.mutate({
+    reviewInstallationMutation.mutate({
       id: installation.id,
       data: { status: 'rejected', rejection_reason: 'Did not meet verification criteria' }
     });
@@ -119,7 +112,6 @@ export default function Admin() {
     pending: pendingInstallations.length,
     approved: allInstallations.filter(i => i.status === 'approved').length,
     totalKva: allInstallations.filter(i => i.status === 'approved').reduce((sum, i) => sum + (i.system_size_kva || 0), 0),
-    installers: installers.length,
     carbonOffset: Math.round(allInstallations.filter(i => i.status === 'approved').reduce((sum, i) => sum + (i.carbon_offset_tons_annual || i.system_size_kva || 0), 0)),
   };
 
@@ -128,8 +120,8 @@ export default function Admin() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage installations and installers</p>
+            <h1 className="text-3xl font-bold text-foreground">Admin Review</h1>
+            <p className="text-muted-foreground">Approve and reject submitted installations</p>
           </div>
           <Button onClick={exportToCSV} variant="outline">
             <Download className="w-4 h-4 mr-2" />
@@ -138,7 +130,7 @@ export default function Admin() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-4 flex items-center gap-4">
               <Clock className="w-8 h-8 text-primary" />
@@ -166,15 +158,6 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4 flex items-center gap-4">
-              <Users className="w-8 h-8 text-chart-3" />
-              <div>
-                <div className="text-2xl font-bold text-foreground">{stats.installers}</div>
-                <div className="text-sm text-muted-foreground">Installers</div>
-              </div>
-            </CardContent>
-          </Card>
           <Card className="bg-accent/5 border-accent/20">
             <CardContent className="p-4 flex items-center gap-4">
               <Leaf className="w-8 h-8 text-accent" />
@@ -190,7 +173,6 @@ export default function Admin() {
           <TabsList className="mb-6">
             <TabsTrigger value="pending">Pending ({pendingInstallations.length})</TabsTrigger>
             <TabsTrigger value="all">All Installations</TabsTrigger>
-            <TabsTrigger value="installers">Installers</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending">
@@ -230,7 +212,7 @@ export default function Admin() {
                           <Button
                             onClick={() => handleApprove(inst)}
                             className="bg-accent hover:bg-accent/90"
-                            disabled={updateInstallationMutation.isPending}
+                            disabled={reviewInstallationMutation.isPending || refreshProfileStatsMutation.isPending}
                           >
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Approve
@@ -238,7 +220,7 @@ export default function Admin() {
                           <Button
                             onClick={() => handleReject(inst)}
                             variant="destructive"
-                            disabled={updateInstallationMutation.isPending}
+                            disabled={reviewInstallationMutation.isPending}
                           >
                             <XCircle className="w-4 h-4 mr-2" />
                             Reject
@@ -313,41 +295,6 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="installers">
-            <div className="space-y-4">
-              {installers.map(installer => (
-                <Card key={installer.id}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {installer.company_name?.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="font-medium text-foreground flex items-center gap-2">
-                          {installer.company_name}
-                          {installer.verified && <CheckCircle className="w-4 h-4 text-accent" />}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {installer.country} • {installer.total_installations || 0} installations • {installer.total_kva || 0} kVA
-                        </div>
-                      </div>
-                    </div>
-                    <Button
-                      variant={installer.verified ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => updateProfileMutation.mutate({
-                        id: installer.id,
-                        data: { verified: !installer.verified }
-                      })}
-                    >
-                      {installer.verified ? 'Unverify' : 'Verify'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
         </Tabs>
       </div>

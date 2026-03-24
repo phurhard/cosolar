@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Zap, Battery, Building2, Users, Leaf } from 'lucide-react';
+import { Sun, Zap, Battery, Building2, Leaf } from 'lucide-react';
 import LiveCounter from './LiveCounter';
 
 export default function StatsSection({ stats }) {
