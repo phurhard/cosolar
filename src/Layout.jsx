@@ -43,11 +43,9 @@ export default function Layout({ children }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/699f51b256befcecac428298/329462bd0_MacBookAir-11.png"
-                alt="CoSolar Logo"
-                className="h-8 w-auto"
-              />
+              <span className="text-xl font-semibold tracking-tight text-foreground">
+                CoSolar
+              </span>
             </Link>
 
             {/* Desktop Nav */}
@@ -189,11 +187,9 @@ export default function Layout({ children }) {
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/699f51b256befcecac428298/329462bd0_MacBookAir-11.png"
-                  alt="CoSolar Logo"
-                  className="h-8 w-auto"
-                />
+                <span className="text-xl font-semibold tracking-tight text-foreground">
+                  CoSolar
+                </span>
               </div>
               <p className="text-muted-foreground max-w-md">
                 Africa's Solar Intelligence & Registry Platform. Tracking solar installations,
