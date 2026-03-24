@@ -9,7 +9,16 @@ import { toast } from 'sonner';
 import { ContactMessage } from '@/api/supabaseClient';
 import { useMutation } from '@tanstack/react-query';
 
+/**
+ * @typedef {Object} ContactFormData
+ * @property {string} name
+ * @property {string} email
+ * @property {string} subject
+ * @property {string} message
+ */
+
 export default function Contact() {
+  /** @type {[ContactFormData, React.Dispatch<React.SetStateAction<ContactFormData>>]} */
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,6 +28,7 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const sendEmailMutation = useMutation({
+    /** @param {ContactFormData} data */
     mutationFn: async (data) => {
       await ContactMessage.create({
         name: data.name,
@@ -36,6 +46,7 @@ export default function Contact() {
     },
   });
 
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {

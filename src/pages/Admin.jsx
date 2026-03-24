@@ -14,6 +14,17 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+/**
+ * @typedef {Object} InstallationReviewInput
+ * @property {string} id
+ * @property {Record<string, any>} data
+ */
+
+/**
+ * @typedef {Object} ProfileRefreshInput
+ * @property {string} id
+ */
+
 export default function Admin() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -30,7 +41,10 @@ export default function Admin() {
   });
 
   const reviewInstallationMutation = useMutation({
-    mutationFn: ({ id, data }) => Installation.update(id, data),
+    /** @param {InstallationReviewInput} input */
+    mutationFn: async ({ id, data }) => {
+      return await Installation.update(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-installations'] });
       queryClient.invalidateQueries({ queryKey: ['all-installations'] });
@@ -39,6 +53,7 @@ export default function Admin() {
   });
 
   const refreshProfileStatsMutation = useMutation({
+    /** @param {ProfileRefreshInput} input */
     mutationFn: async ({ id }) => {
       // Recalculate stats
       const installations = await Installation.filter({ installer_profile_id: id, status: 'approved' });

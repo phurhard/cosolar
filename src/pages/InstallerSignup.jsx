@@ -14,9 +14,23 @@ import { Building2, Award, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { COUNTRIES } from '@/lib/constants';
 
+/**
+ * @typedef {Object} InstallerProfileFormData
+ * @property {string} company_name
+ * @property {string} country
+ * @property {string} state
+ * @property {string} city
+ * @property {string} years_of_experience
+ * @property {string} phone
+ * @property {string} website
+ * @property {string} bio
+ * @property {string[]} certifications
+ */
+
 export default function InstallerSignup() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  /** @type {[InstallerProfileFormData, React.Dispatch<React.SetStateAction<InstallerProfileFormData>>]} */
   const [formData, setFormData] = useState({
     company_name: '',
     country: '',
@@ -43,7 +57,10 @@ export default function InstallerSignup() {
   }, [existingProfile, navigate]);
 
   const createProfileMutation = useMutation({
-    mutationFn: (data) => InstallerProfile.create({ ...data, created_by: user?.email }),
+    /** @param {InstallerProfileFormData} data */
+    mutationFn: async (data) => {
+      return await InstallerProfile.create({ ...data, created_by: user?.email });
+    },
     onSuccess: (result) => {
       toast.success('Profile created successfully!');
       navigate(createPageUrl('InstallerProfile') + `?id=${result.id}`);
@@ -53,16 +70,19 @@ export default function InstallerSignup() {
     },
   });
 
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.company_name || !formData.country) {
       toast.error('Please fill in required fields');
       return;
     }
-    createProfileMutation.mutate({
+    /** @type {Record<string, any>} */
+    const profilePayload = {
       ...formData,
-      years_of_experience: parseInt(formData.years_of_experience) || 0,
-    });
+      years_of_experience: Number(formData.years_of_experience) || 0,
+    };
+    createProfileMutation.mutate(profilePayload);
   };
 
   const addCertification = () => {

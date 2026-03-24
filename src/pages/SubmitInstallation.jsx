@@ -16,11 +16,30 @@ import { COUNTRIES, INSTALLATION_TYPES } from '@/lib/constants';
 
 const batteryTypes = ['Lithium-ion', 'Lead-acid', 'Gel', 'AGM', 'LiFePO4', 'None'];
 
+/**
+ * @typedef {Object} InstallationFormData
+ * @property {string} country
+ * @property {string} state
+ * @property {string} city
+ * @property {string} installation_type
+ * @property {string} system_size_kva
+ * @property {string} number_of_panels
+ * @property {string} panel_wattage
+ * @property {string} battery_type
+ * @property {string} battery_capacity_kwh
+ * @property {string} number_of_batteries
+ * @property {string} battery_capacity_each
+ * @property {string} number_of_inverters
+ * @property {string} inverter_capacity_kva
+ * @property {string} installation_date
+ */
+
 export default function SubmitInstallation() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
+  /** @type {[InstallationFormData, React.Dispatch<React.SetStateAction<InstallationFormData>>]} */
   const [formData, setFormData] = useState({
     country: '',
     state: '',
@@ -48,7 +67,10 @@ export default function SubmitInstallation() {
   });
 
   const createInstallationMutation = useMutation({
-    mutationFn: (data) => Installation.create(data),
+    /** @param {Record<string, any>} data */
+    mutationFn: async (data) => {
+      return await Installation.create(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['installations'] });
       toast.success('Installation submitted for review!');
@@ -59,6 +81,7 @@ export default function SubmitInstallation() {
     },
   });
 
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -87,6 +110,7 @@ export default function SubmitInstallation() {
     });
   };
 
+  /** @param {keyof InstallationFormData} field @param {string} value */
   const updateField = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
