@@ -57,7 +57,7 @@ export default function InstallerSignup() {
   }, [existingProfile, navigate]);
 
   const createProfileMutation = useMutation({
-    /** @param {InstallerProfileFormData} data */
+    /** @param {Record<string, any>} data */
     mutationFn: async (data) => {
       return await InstallerProfile.create({ ...data, created_by: user?.email });
     },
