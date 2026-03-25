@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { InstallerProfile as InstallerProfileAPI, Installation } from '@/api/supabaseClient';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import {
 export default function InstallerProfile() {
   const [searchParams] = useSearchParams();
   const profileId = searchParams.get('id');
+  const { user } = useAuth();
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['installer-profile', profileId],
@@ -69,7 +71,9 @@ export default function InstallerProfile() {
     );
   }
 
-  if (profile.is_system_profile) {
+  const canViewSystemProfile = user?.role === 'admin' || user?.email === profile.created_by;
+
+  if (profile.is_system_profile && !canViewSystemProfile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

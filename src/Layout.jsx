@@ -21,7 +21,7 @@ export default function Layout({ children }) {
   ];
   const authenticatedNavItems = user
     ? [
-        { name: 'Submit Installation', path: 'SubmitInstallation', icon: FileText },
+        ...(user.role === 'admin' ? [] : [{ name: 'Submit Installation', path: 'SubmitInstallation', icon: FileText }]),
         { name: 'Profile', path: 'InstallerSignup', icon: User },
       ]
     : [];
@@ -196,7 +196,7 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-muted-foreground">
                 <li><Link to={createPageUrl('Analytics')} className="hover:text-foreground">Analytics</Link></li>
                 <li><Link to={createPageUrl('Leaderboard')} className="hover:text-foreground">Leaderboard</Link></li>
-                {user && (
+                {user && user.role !== 'admin' && (
                   <li><Link to={createPageUrl('SubmitInstallation')} className="hover:text-foreground">Submit Installation</Link></li>
                 )}
               </ul>
