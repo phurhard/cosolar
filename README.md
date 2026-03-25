@@ -20,3 +20,21 @@ Run the app: `npm run dev`
 **Run locally**
 
 Use `npm run dev` for development and `npm run build` to verify a production build.
+
+**Supabase bootstrap**
+
+This repo now uses migrations plus seed data:
+
+1. `supabase/migrations/20260325000000_init.sql` is the migration used by `supabase db reset` and `supabase db push`
+2. `supabase/seed.sql` bootstraps a default super admin and starter profile
+
+For a fresh local Supabase project, run:
+
+`npx supabase db reset`
+
+Seeded admin credentials:
+
+- Email: `admin@cosolar.local`
+- Password: `ChangeMe123!`
+
+Change that password after first login if you reuse the seed beyond local development.
