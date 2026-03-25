@@ -38,7 +38,9 @@ export default function InstallerProfile() {
   });
 
   const getRank = () => {
-    const sorted = [...allInstallers].sort((a, b) => (b.total_kva || 0) - (a.total_kva || 0));
+    const sorted = allInstallers
+      .filter(installer => !installer.is_system_profile)
+      .sort((a, b) => (b.total_kva || 0) - (a.total_kva || 0));
     return sorted.findIndex(i => i.id === profileId) + 1;
   };
 
@@ -56,6 +58,23 @@ export default function InstallerProfile() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground mb-2">Profile Not Found</h2>
           <p className="text-muted-foreground mb-4">This installer profile doesn't exist.</p>
+          <Link to={createPageUrl('Leaderboard')}>
+            <Button>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Leaderboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile.is_system_profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Profile Not Found</h2>
+          <p className="text-muted-foreground mb-4">This installer profile is not publicly available.</p>
           <Link to={createPageUrl('Leaderboard')}>
             <Button>
               <ArrowLeft className="w-4 h-4 mr-2" />

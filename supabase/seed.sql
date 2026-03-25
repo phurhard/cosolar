@@ -111,7 +111,8 @@ INSERT INTO public.installer_profiles (
   city,
   years_of_experience,
   bio,
-  verified
+  verified,
+  is_system_profile
 )
 VALUES (
   'admin@cosolar.local',
@@ -121,6 +122,7 @@ VALUES (
   'Lagos',
   10,
   'Seeded super-admin profile for initial project bootstrap.',
+  TRUE,
   TRUE
 )
 ON CONFLICT (created_by) DO UPDATE
@@ -131,4 +133,5 @@ SET
   city = EXCLUDED.city,
   years_of_experience = EXCLUDED.years_of_experience,
   bio = EXCLUDED.bio,
-  verified = EXCLUDED.verified;
+  verified = EXCLUDED.verified,
+  is_system_profile = EXCLUDED.is_system_profile;

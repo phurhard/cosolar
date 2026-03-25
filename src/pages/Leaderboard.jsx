@@ -16,9 +16,11 @@ export default function Leaderboard() {
     queryFn: () => InstallerProfile.list(),
   });
 
+  const publicInstallers = installers.filter(i => !i.is_system_profile);
+
   const filteredInstallers = country === 'All Countries'
-    ? installers
-    : installers.filter(i => i.country === country);
+    ? publicInstallers
+    : publicInstallers.filter(i => i.country === country);
 
   if (isLoading) {
     return (
