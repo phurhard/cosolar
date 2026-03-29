@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Installation, InstallerProfile, sendInstallationReviewEmail } from '@/api/supabaseClient';
+import { Installation, InstallerProfile, sendInstallationReviewEmail, supabase } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,33 @@ export default function Admin() {
     queryKey: ['all-installations'],
     queryFn: () => Installation.list(),
   });
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
+
+    const channel = supabase
+      .channel('admin-installations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'installations',
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            toast.info('New installation submitted for review');
+          }
+          queryClient.invalidateQueries({ queryKey: ['pending-installations'] });
+          queryClient.invalidateQueries({ queryKey: ['all-installations'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.role, queryClient]);
 
   const reviewInstallationMutation = useMutation({
     /** @param {InstallationReviewInput} input */
