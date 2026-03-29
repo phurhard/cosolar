@@ -25,20 +25,20 @@ export default function Layout({ children }) {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.email],
-    queryFn: () => Notification.listMine(),
+    queryFn: async () => await Notification.listMine(user?.email),
     enabled: !!user?.email,
     staleTime: 30_000,
   });
 
   const markNotificationReadMutation = useMutation({
-    mutationFn: (id) => Notification.markRead(id),
+    mutationFn: async (id) => await Notification.markRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.email] });
     },
   });
 
   const markAllNotificationsReadMutation = useMutation({
-    mutationFn: () => Notification.markAllRead(),
+    mutationFn: async () => await Notification.markAllRead(user?.email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.email] });
     },

@@ -14,22 +14,22 @@ function unwrap({ data, error }) {
 // ── Installations ──────────────────────────────────────────────────────────
 
 export const Installation = {
-  list: () =>
-    supabase.from('installations').select('*').then(unwrap),
+  list: async () =>
+    await supabase.from('installations').select('*').then(unwrap),
 
-  filter: (filters) => {
+  filter: async (filters) => {
     let q = supabase.from('installations').select('*')
     for (const [key, val] of Object.entries(filters)) {
       q = q.eq(key, val)
     }
-    return q.then(unwrap)
+    return await q.then(unwrap)
   },
 
-  create: (data) =>
-    supabase.from('installations').insert(data).select().single().then(unwrap),
+  create: async (data) =>
+    await supabase.from('installations').insert(data).select().single().then(unwrap),
 
-  update: (id, data) =>
-    supabase.from('installations').update(data).eq('id', id).select().single().then(unwrap),
+  update: async (id, data) =>
+    await supabase.from('installations').update(data).eq('id', id).select().single().then(unwrap),
 
   review: async ({ id, status, comment, adminEmail }) => {
     const { data, error } = await supabase.rpc('review_installation', {
@@ -46,54 +46,56 @@ export const Installation = {
 // ── InstallerProfile ───────────────────────────────────────────────────────
 
 export const InstallerProfile = {
-  list: () =>
-    supabase.from('installer_profiles').select('*').then(unwrap),
+  list: async () =>
+    await supabase.from('installer_profiles').select('*').then(unwrap),
 
-  filter: (filters) => {
+  filter: async (filters) => {
     let q = supabase.from('installer_profiles').select('*')
     for (const [key, val] of Object.entries(filters)) {
       q = q.eq(key, val)
     }
-    return q.then(unwrap)
+    return await q.then(unwrap)
   },
 
-  create: (data) =>
-    supabase.from('installer_profiles').insert(data).select().single().then(unwrap),
+  create: async (data) =>
+    await supabase.from('installer_profiles').insert(data).select().single().then(unwrap),
 
-  update: (id, data) =>
-    supabase.from('installer_profiles').update(data).eq('id', id).select().single().then(unwrap),
+  update: async (id, data) =>
+    await supabase.from('installer_profiles').update(data).eq('id', id).select().single().then(unwrap),
 }
 
 // ── Contact messages ───────────────────────────────────────────────────────
 
 export const ContactMessage = {
-  create: (data) =>
-    supabase.from('contact_messages').insert(data).select().single().then(unwrap),
+  create: async (data) =>
+    await supabase.from('contact_messages').insert(data).select().single().then(unwrap),
 }
 
 // ── Notifications ──────────────────────────────────────────────────────────
 
 export const Notification = {
-  listMine: () =>
-    supabase
+  listMine: async (userEmail) =>
+    await supabase
       .from('notifications')
       .select('*')
+      .eq('user_email', userEmail)
       .order('created_at', { ascending: false })
       .limit(20)
       .then(unwrap),
 
-  markRead: (id) =>
-    supabase
+  markRead: async (id) =>
+    await supabase
       .from('notifications')
       .update({ read_at: new Date().toISOString() })
       .eq('id', id)
       .is('read_at', null)
       .then(unwrap),
 
-  markAllRead: () =>
-    supabase
+  markAllRead: async (userEmail) =>
+    await supabase
       .from('notifications')
       .update({ read_at: new Date().toISOString() })
+      .eq('user_email', userEmail)
       .is('read_at', null)
       .then(unwrap),
 }
