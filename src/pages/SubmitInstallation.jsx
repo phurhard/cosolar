@@ -15,6 +15,9 @@ import { format } from 'date-fns';
 import { COUNTRIES, INSTALLATION_TYPES } from '@/lib/constants';
 
 const batteryTypes = ['Lithium-ion', 'Lead-acid', 'Gel', 'AGM', 'LiFePO4', 'None'];
+const inverterBrands = ['Victron', 'SMA', 'Fronius', 'Growatt', 'Huawei', 'Deye', 'Sunsynk', 'Felicity', 'Other'];
+const solarPanelBrands = ['Jinko', 'Canadian Solar', 'Longi', 'Trina', 'JA Solar', 'SunPower', 'Other'];
+const batteryBrands = ['Pylontech', 'BYD', 'Felicity', 'LG Chem', 'Tesla', 'KiloVault', 'Other'];
 
 /**
  * @typedef {Object} InstallationFormData
@@ -25,12 +28,15 @@ const batteryTypes = ['Lithium-ion', 'Lead-acid', 'Gel', 'AGM', 'LiFePO4', 'None
  * @property {string} system_size_kva
  * @property {string} number_of_panels
  * @property {string} panel_wattage
+ * @property {string} solar_panel_brand
  * @property {string} battery_type
+ * @property {string} battery_brand
  * @property {string} battery_capacity_kwh
  * @property {string} number_of_batteries
  * @property {string} battery_capacity_each
  * @property {string} number_of_inverters
  * @property {string} inverter_capacity_kva
+ * @property {string} inverter_brand
  * @property {string} installation_date
  */
 
@@ -48,12 +54,15 @@ export default function SubmitInstallation() {
     system_size_kva: '',
     number_of_panels: '',
     panel_wattage: '',
+    solar_panel_brand: '',
     battery_type: '',
+    battery_brand: '',
     battery_capacity_kwh: '',
     number_of_batteries: '',
     battery_capacity_each: '',
     number_of_inverters: '',
     inverter_capacity_kva: '',
+    inverter_brand: '',
     installation_date: format(new Date(), 'yyyy-MM-dd'),
   });
 
@@ -210,7 +219,7 @@ export default function SubmitInstallation() {
                   System Specifications
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label>Installation Type *</Label>
                     <Select value={formData.installation_type} onValueChange={(v) => updateField('installation_type', v)}>
                       <SelectTrigger className="bg-background">
@@ -218,6 +227,20 @@ export default function SubmitInstallation() {
                       </SelectTrigger>
                       <SelectContent>
                         {INSTALLATION_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2 border-t border-border pt-4 mt-2">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Inverter Configuration</h4>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Inverter Brand</Label>
+                    <Select value={formData.inverter_brand} onValueChange={(v) => updateField('inverter_brand', v)}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {inverterBrands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -251,6 +274,20 @@ export default function SubmitInstallation() {
                       className="bg-muted"
                     />
                   </div>
+                  <div className="space-y-2 md:col-span-2 border-t border-border pt-4 mt-2">
+                    <h4 className="text-sm font-semibold text-foreground uppercase tracking-wider">Solar Panel Configuration</h4>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Solar Panel Brand</Label>
+                    <Select value={formData.solar_panel_brand} onValueChange={(v) => updateField('solar_panel_brand', v)}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {solarPanelBrands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2">
                     <Label>Number of Panels *</Label>
                     <Input
@@ -271,7 +308,7 @@ export default function SubmitInstallation() {
                       className="bg-background"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2 mt-4">
                     <Label>Installation Date</Label>
                     <Input
                       type="date"
@@ -291,10 +328,21 @@ export default function SubmitInstallation() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
+                    <Label>Battery Brand</Label>
+                    <Select value={formData.battery_brand} onValueChange={(v) => updateField('battery_brand', v)}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {batteryBrands.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label>Battery Type</Label>
                     <Select value={formData.battery_type} onValueChange={(v) => updateField('battery_type', v)}>
                       <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Select" />
+                        <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
                         {batteryTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
@@ -321,7 +369,7 @@ export default function SubmitInstallation() {
                       className="bg-background"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label>Total Capacity (kWh) - Calculated</Label>
                     <Input
                       type="number"
