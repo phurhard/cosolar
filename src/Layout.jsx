@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/lib/AuthContext';
+import { Notification, supabase } from '@/api/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   Sun, BarChart3, Trophy, FileText,
-  Menu, X, LogOut, Shield, User
+  Menu, X, LogOut, Shield, User, Bell
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -13,6 +21,57 @@ export default function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', user?.email],
+    queryFn: () => Notification.listMine(),
+    enabled: !!user?.email,
+    staleTime: 30_000,
+  });
+
+  const markNotificationReadMutation = useMutation({
+    mutationFn: (id) => Notification.markRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.email] });
+    },
+  });
+
+  const markAllNotificationsReadMutation = useMutation({
+    mutationFn: () => Notification.markAllRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user?.email] });
+    },
+  });
+
+  const unreadCount = notifications.filter((item) => !item.read_at).length;
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_email=eq.${user.email}`,
+        },
+        (payload) => {
+          toast.success(payload.new.title, {
+            description: payload.new.message,
+          });
+          queryClient.invalidateQueries({ queryKey: ['notifications', user.email] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.email, queryClient]);
 
   const publicNavItems = [
     { name: 'Home', path: 'Home', icon: Sun },
@@ -41,6 +100,12 @@ export default function Layout({ children }) {
     navigate(createPageUrl('Login'));
   };
 
+  const handleNotificationSelect = (notification) => {
+    if (!notification.read_at) {
+      markNotificationReadMutation.mutate(notification.id);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -49,6 +114,7 @@ export default function Layout({ children }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to={createPageUrl('Home')} className="flex items-center gap-2">
+              <img src="/logo.svg" alt="CoSolar Logo" className="h-8 w-auto" />
               <span className="text-xl font-semibold tracking-tight text-foreground">
                 CoSolar
               </span>
@@ -75,6 +141,59 @@ export default function Layout({ children }) {
             <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="w-4 h-4" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-96">
+                      <div className="flex items-center justify-between px-2 py-1.5">
+                        <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            className="text-xs text-primary hover:underline"
+                            onClick={() => markAllNotificationsReadMutation.mutate()}
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <DropdownMenuSeparator />
+                      {notifications.length === 0 ? (
+                        <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                          No notifications yet.
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <DropdownMenuItem
+                            key={notification.id}
+                            className="items-start whitespace-normal py-3"
+                            onSelect={() => handleNotificationSelect(notification)}
+                          >
+                            <div className="flex w-full gap-3">
+                              <div className={`mt-1 h-2.5 w-2.5 rounded-full ${notification.read_at ? 'bg-muted-foreground/30' : 'bg-primary'}`} />
+                              <div className="min-w-0 flex-1">
+                                <div className="font-medium text-foreground">{notification.title}</div>
+                                <div className="mt-1 text-xs leading-5 text-muted-foreground">
+                                  {notification.message}
+                                </div>
+                                <div className="mt-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+                                  {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                </div>
+                              </div>
+                            </div>
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   {user.role === 'admin' && (
                     <Link to={createPageUrl('Admin')}>
                       <Button variant="ghost" size="sm">
@@ -135,6 +254,25 @@ export default function Layout({ children }) {
               <div className="pt-4 border-t border-border space-y-2">
                 {user ? (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (unreadCount > 0) {
+                          markAllNotificationsReadMutation.mutate();
+                        }
+                      }}
+                      className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-muted-foreground w-full"
+                    >
+                      <span className="flex items-center gap-3">
+                        <Bell className="w-5 h-5" />
+                        Notifications
+                      </span>
+                      {unreadCount > 0 && (
+                        <span className="rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
                     {user.role === 'admin' && (
                       <Link
                         to={createPageUrl('Admin')}
@@ -180,6 +318,7 @@ export default function Layout({ children }) {
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
+                <img src="/logo.svg" alt="CoSolar Logo" className="h-8 w-auto grayscale opacity-80" />
                 <span className="text-xl font-semibold tracking-tight text-foreground">
                   CoSolar
                 </span>

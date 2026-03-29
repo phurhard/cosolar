@@ -30,6 +30,17 @@ export const Installation = {
 
   update: (id, data) =>
     supabase.from('installations').update(data).eq('id', id).select().single().then(unwrap),
+
+  review: async ({ id, status, comment, adminEmail }) => {
+    const { data, error } = await supabase.rpc('review_installation', {
+      p_installation_id: id,
+      p_status: status,
+      p_comment: comment ?? null,
+      p_admin_email: adminEmail ?? null,
+    })
+
+    return unwrap({ data, error })
+  },
 }
 
 // ── InstallerProfile ───────────────────────────────────────────────────────
@@ -58,4 +69,43 @@ export const InstallerProfile = {
 export const ContactMessage = {
   create: (data) =>
     supabase.from('contact_messages').insert(data).select().single().then(unwrap),
+}
+
+// ── Notifications ──────────────────────────────────────────────────────────
+
+export const Notification = {
+  listMine: () =>
+    supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(unwrap),
+
+  markRead: (id) =>
+    supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('id', id)
+      .is('read_at', null)
+      .then(unwrap),
+
+  markAllRead: () =>
+    supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .is('read_at', null)
+      .then(unwrap),
+}
+
+export const sendInstallationReviewEmail = async (payload) => {
+  const { data, error } = await supabase.functions.invoke('send-installation-review-email', {
+    body: payload,
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data
 }

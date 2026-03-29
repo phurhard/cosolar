@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Installation, InstallerProfile } from '@/api/supabaseClient';
+import { Installation, InstallerProfile, sendInstallationReviewEmail } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle
+} from '@/components/ui/dialog';
 import {
   CheckCircle, XCircle, Clock, Loader2, Download,
   Zap, Search, Leaf
@@ -29,6 +34,12 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [reviewDialog, setReviewDialog] = useState({
+    open: false,
+    installation: null,
+    status: 'approved',
+    comment: '',
+  });
 
   const { data: pendingInstallations = [], isLoading: pendingLoading } = useQuery({
     queryKey: ['pending-installations'],
@@ -43,7 +54,31 @@ export default function Admin() {
   const reviewInstallationMutation = useMutation({
     /** @param {InstallationReviewInput} input */
     mutationFn: async ({ id, data }) => {
-      return await Installation.update(id, data);
+      const updatedInstallation = await Installation.review({
+        id,
+        status: data.status,
+        comment: data.comment,
+        adminEmail: user?.email,
+      });
+
+      try {
+        await sendInstallationReviewEmail({
+          installationId: updatedInstallation.id,
+          requesterEmail: updatedInstallation.created_by,
+          status: updatedInstallation.status,
+          comment: updatedInstallation.admin_review_comment,
+          adminEmail: updatedInstallation.reviewed_by,
+          installationType: updatedInstallation.installation_type,
+          location: [updatedInstallation.city, updatedInstallation.state, updatedInstallation.country]
+            .filter(Boolean)
+            .join(', '),
+        });
+      } catch (emailError) {
+        console.error('Failed to send installation review email', emailError);
+        toast.error('Review saved, but the email notification could not be sent.');
+      }
+
+      return updatedInstallation;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-installations'] });
@@ -75,21 +110,45 @@ export default function Admin() {
     },
   });
 
-  const handleApprove = async (installation) => {
-    await reviewInstallationMutation.mutateAsync({
-      id: installation.id,
-      data: { status: 'approved' }
+  const openReviewDialog = (installation, status) => {
+    setReviewDialog({
+      open: true,
+      installation,
+      status,
+      comment: installation?.admin_review_comment || '',
     });
-    if (installation.installer_profile_id) {
-      await refreshProfileStatsMutation.mutateAsync({ id: installation.installer_profile_id });
-    }
   };
 
-  const handleReject = (installation) => {
-    reviewInstallationMutation.mutate({
-      id: installation.id,
-      data: { status: 'rejected', rejection_reason: 'Did not meet verification criteria' }
+  const closeReviewDialog = () => {
+    setReviewDialog({
+      open: false,
+      installation: null,
+      status: 'approved',
+      comment: '',
     });
+  };
+
+  const submitReview = async () => {
+    if (!reviewDialog.installation) return;
+
+    if (!reviewDialog.comment.trim()) {
+      toast.error('Please add a comment for the requester');
+      return;
+    }
+
+    await reviewInstallationMutation.mutateAsync({
+      id: reviewDialog.installation.id,
+      data: {
+        status: reviewDialog.status,
+        comment: reviewDialog.comment.trim(),
+      }
+    });
+
+    if (reviewDialog.status === 'approved' && reviewDialog.installation.installer_profile_id) {
+      await refreshProfileStatsMutation.mutateAsync({ id: reviewDialog.installation.installer_profile_id });
+    }
+
+    closeReviewDialog();
   };
 
   const exportToCSV = () => {
@@ -225,7 +284,7 @@ export default function Admin() {
                         </div>
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => handleApprove(inst)}
+                            onClick={() => openReviewDialog(inst, 'approved')}
                             className="bg-accent hover:bg-accent/90"
                             disabled={reviewInstallationMutation.isPending || refreshProfileStatsMutation.isPending}
                           >
@@ -233,7 +292,7 @@ export default function Admin() {
                             Approve
                           </Button>
                           <Button
-                            onClick={() => handleReject(inst)}
+                            onClick={() => openReviewDialog(inst, 'rejected')}
                             variant="destructive"
                             disabled={reviewInstallationMutation.isPending}
                           >
@@ -313,6 +372,67 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={reviewDialog.open} onOpenChange={(open) => !open && closeReviewDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {reviewDialog.status === 'approved' ? 'Approve installation' : 'Reject installation'}
+            </DialogTitle>
+            <DialogDescription>
+              Add a comment for the requester. This will appear in-app and be sent by email.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {reviewDialog.installation && (
+              <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">
+                <div className="font-medium text-foreground">
+                  {reviewDialog.installation.installation_type || 'Installation review'}
+                </div>
+                <div className="text-muted-foreground">
+                  {[reviewDialog.installation.city, reviewDialog.installation.state, reviewDialog.installation.country]
+                    .filter(Boolean)
+                    .join(', ')}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="review-comment" className="text-sm font-medium text-foreground">
+                Comment
+              </label>
+              <Textarea
+                id="review-comment"
+                value={reviewDialog.comment}
+                onChange={(e) => setReviewDialog(prev => ({ ...prev, comment: e.target.value }))}
+                placeholder={
+                  reviewDialog.status === 'approved'
+                    ? 'Example: Approved after verifying the project details.'
+                    : 'Example: Please correct the project size and location details, then resubmit.'
+                }
+                className="min-h-32"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeReviewDialog} disabled={reviewInstallationMutation.isPending || refreshProfileStatsMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              onClick={submitReview}
+              variant={reviewDialog.status === 'approved' ? 'default' : 'destructive'}
+              disabled={reviewInstallationMutation.isPending || refreshProfileStatsMutation.isPending}
+            >
+              {(reviewInstallationMutation.isPending || refreshProfileStatsMutation.isPending) && (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              )}
+              {reviewDialog.status === 'approved' ? 'Approve with comment' : 'Reject with comment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
