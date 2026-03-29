@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Installation, InstallerProfile } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,8 @@ const batteryBrands = ['Pylontech', 'BYD', 'Felicity', 'LG Chem', 'Tesla', 'Kilo
 
 export default function SubmitInstallation() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('id');
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -75,6 +77,39 @@ export default function SubmitInstallation() {
     enabled: !!user?.email,
   });
 
+  const { data: existingInstallation, isLoading: isLoadingExisting } = useQuery({
+    queryKey: ['installation', editId],
+    queryFn: async () => {
+      const data = await Installation.filter({ id: editId });
+      return data[0];
+    },
+    enabled: !!editId,
+  });
+
+  useEffect(() => {
+    if (existingInstallation) {
+      setFormData({
+        country: existingInstallation.country || '',
+        state: existingInstallation.state || '',
+        city: existingInstallation.city || '',
+        installation_type: existingInstallation.installation_type || '',
+        system_size_kva: existingInstallation.system_size_kva?.toString() || '',
+        number_of_panels: existingInstallation.number_of_panels?.toString() || '',
+        panel_wattage: existingInstallation.panel_wattage?.toString() || '',
+        solar_panel_brand: existingInstallation.solar_panel_brand || '',
+        battery_type: existingInstallation.battery_type || '',
+        battery_brand: existingInstallation.battery_brand || '',
+        battery_capacity_kwh: existingInstallation.battery_capacity_kwh?.toString() || '',
+        number_of_batteries: existingInstallation.number_of_batteries?.toString() || '',
+        battery_capacity_each: existingInstallation.battery_capacity_each?.toString() || '',
+        number_of_inverters: existingInstallation.number_of_inverters?.toString() || '',
+        inverter_capacity_kva: existingInstallation.inverter_capacity_kva?.toString() || '',
+        inverter_brand: existingInstallation.inverter_brand || '',
+        installation_date: existingInstallation.installation_date || format(new Date(), 'yyyy-MM-dd'),
+      });
+    }
+  }, [existingInstallation]);
+
   const createInstallationMutation = useMutation({
     /** @param {Record<string, any>} data */
     mutationFn: async (data) => {
@@ -87,6 +122,21 @@ export default function SubmitInstallation() {
     },
     onError: () => {
       toast.error('Failed to submit installation');
+    },
+  });
+
+  const updateInstallationMutation = useMutation({
+    /** @param {Record<string, any>} data */
+    mutationFn: async (data) => {
+      return await Installation.update(editId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['installations'] });
+      toast.success('Installation re-submitted for review!');
+      navigate(createPageUrl('Analytics'));
+    },
+    onError: () => {
+      toast.error('Failed to update installation');
     },
   });
 
@@ -103,7 +153,7 @@ export default function SubmitInstallation() {
     const carbonOffsetAnnual = systemKva * 1.0;
     const carbonOffsetLifetime = carbonOffsetAnnual * 25;
 
-    createInstallationMutation.mutate({
+    const payload = {
       ...formData,
       created_by: user?.email,
       installer_profile_id: myProfile?.id,
@@ -116,7 +166,13 @@ export default function SubmitInstallation() {
       carbon_offset_tons_annual: carbonOffsetAnnual,
       carbon_offset_lifetime: carbonOffsetLifetime,
       status: 'pending',
-    });
+    };
+
+    if (editId) {
+      updateInstallationMutation.mutate(payload);
+    } else {
+      createInstallationMutation.mutate(payload);
+    }
   };
 
   /** @param {keyof InstallationFormData} field @param {string} value */
@@ -139,6 +195,16 @@ export default function SubmitInstallation() {
       return updated;
     });
   };
+
+  if (isLoadingExisting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const isPending = createInstallationMutation.isPending || updateInstallationMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -165,9 +231,9 @@ export default function SubmitInstallation() {
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Sun className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Submit Installation</CardTitle>
+            <CardTitle className="text-2xl">{editId ? 'Update Installation' : 'Submit Installation'}</CardTitle>
             <CardDescription>
-              Add a new solar installation to Africa's registry
+              {editId ? 'Update the details to re-submit your installation for review' : 'Add a new solar installation to Africa\'s registry'}
             </CardDescription>
           </CardHeader>
 
@@ -422,9 +488,9 @@ export default function SubmitInstallation() {
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary/90 py-6 text-lg"
-                  disabled={createInstallationMutation.isPending}
+                  disabled={isPending}
                 >
-                  {createInstallationMutation.isPending ? (
+                  {isPending ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                       Submitting...
@@ -432,7 +498,7 @@ export default function SubmitInstallation() {
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5 mr-2" />
-                      Submit Installation
+                      {editId ? 'Resubmit Installation' : 'Submit Installation'}
                     </>
                   )}
                 </Button>

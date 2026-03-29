@@ -104,6 +104,9 @@ export default function Layout({ children }) {
     if (!notification.read_at) {
       markNotificationReadMutation.mutate(notification.id);
     }
+    if (notification.type === 'installation_review' && notification.metadata?.status === 'rejected' && notification.installation_id) {
+      navigate(`${createPageUrl('SubmitInstallation')}?id=${notification.installation_id}`);
+    }
   };
 
   return (
