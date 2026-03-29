@@ -114,10 +114,7 @@ export default function Layout({ children }) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-              <img src="/logo.svg" alt="CoSolar Logo" className="h-8 w-auto" />
-              <span className="text-xl font-semibold tracking-tight text-foreground">
-                CoSolar
-              </span>
+              <img src="/logo.svg" alt="CoSolar Logo" className="h-12 w-auto" />
             </Link>
 
             {/* Desktop Nav */}
@@ -318,10 +315,7 @@ export default function Layout({ children }) {
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.svg" alt="CoSolar Logo" className="h-8 w-auto grayscale opacity-80" />
-                <span className="text-xl font-semibold tracking-tight text-foreground">
-                  CoSolar
-                </span>
+                <img src="/logo.svg" alt="CoSolar Logo" className="h-12 w-auto grayscale opacity-80" />
               </div>
               <p className="text-muted-foreground max-w-md">
                 Africa's Solar Intelligence & Registry Platform. Tracking solar installations,
