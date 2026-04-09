@@ -111,3 +111,59 @@ export const sendInstallationReviewEmail = async (payload) => {
 
   return data
 }
+
+// ── Forum Posts ────────────────────────────────────────────────────────────
+
+export const ForumPost = {
+  list: async ({ category, search, limit = 50 } = {}) => {
+    let q = supabase
+      .from('forum_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (category && category !== 'All') {
+      q = q.eq('category', category)
+    }
+    if (search) {
+      q = q.or(`title.ilike.%${search}%,body.ilike.%${search}%`)
+    }
+    return await q.then(unwrap)
+  },
+
+  get: async (id) =>
+    await supabase.from('forum_posts').select('*').eq('id', id).single().then(unwrap),
+
+  create: async (data) =>
+    await supabase.from('forum_posts').insert(data).select().single().then(unwrap),
+
+  update: async (id, data) =>
+    await supabase.from('forum_posts').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id).select().single().then(unwrap),
+
+  delete: async (id) =>
+    await supabase.from('forum_posts').delete().eq('id', id).then(unwrap),
+
+  like: async (id) =>
+    await supabase.rpc('increment_field', { table_name: 'forum_posts', row_id: id, field_name: 'likes_count' }).then(({ error }) => {
+      // Fallback: direct update if RPC doesn't exist
+      if (error) return supabase.from('forum_posts').update({ likes_count: supabase.raw('likes_count + 1') }).eq('id', id).then(unwrap)
+    }),
+}
+
+// ── Forum Replies ──────────────────────────────────────────────────────────
+
+export const ForumReply = {
+  listByPost: async (postId) =>
+    await supabase
+      .from('forum_replies')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true })
+      .then(unwrap),
+
+  create: async (data) =>
+    await supabase.from('forum_replies').insert(data).select().single().then(unwrap),
+
+  delete: async (id) =>
+    await supabase.from('forum_replies').delete().eq('id', id).then(unwrap),
+}

@@ -49,12 +49,17 @@
  */
 import Admin from './pages/Admin';
 import Contact from './pages/Contact';
+import CostBenefit from './pages/CostBenefit';
 import Dashboard from './pages/Dashboard';
+import Forum from './pages/Forum';
+import ForumThread from './pages/ForumThread';
 import Home from './pages/Home';
 import InstallerProfile from './pages/InstallerProfile';
 import InstallerSignup from './pages/InstallerSignup';
 import Leaderboard from './pages/Leaderboard';
+import LoadCalculator from './pages/LoadCalculator';
 import Login from './pages/Login';
+import SolarGuide from './pages/SolarGuide';
 import SubmitInstallation from './pages/SubmitInstallation';
 import __Layout from './Layout.jsx';
 
@@ -62,12 +67,17 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "Admin": Admin,
     "Contact": Contact,
+    "CostBenefit": CostBenefit,
     "Dashboard": Dashboard,
+    "Forum": Forum,
+    "ForumThread": ForumThread,
     "Home": Home,
     "InstallerProfile": InstallerProfile,
     "InstallerSignup": InstallerSignup,
     "Leaderboard": Leaderboard,
+    "LoadCalculator": LoadCalculator,
     "Login": Login,
+    "SolarGuide": SolarGuide,
     "SubmitInstallation": SubmitInstallation,
 }
 

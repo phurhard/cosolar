@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Sun, BarChart3, Trophy, FileText,
-  Menu, X, LogOut, Shield, User, Bell
+  Menu, X, LogOut, Shield, User, Bell,
+  Calculator, MessageSquare
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -77,6 +78,8 @@ export default function Layout({ children }) {
     { name: 'Home', path: 'Home', icon: Sun },
     { name: 'Analytics', path: 'Analytics', icon: BarChart3 },
     { name: 'Leaderboard', path: 'Leaderboard', icon: Trophy },
+    { name: 'Calculator', path: 'LoadCalculator', icon: Calculator },
+    { name: 'Forum', path: 'Forum', icon: MessageSquare },
   ];
   const authenticatedNavItems = user
     ? [
@@ -314,7 +317,7 @@ export default function Layout({ children }) {
       {/* Footer */}
       <footer className="bg-card border-t border-border mt-auto">
         <div className="container mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {/* Brand */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
@@ -335,6 +338,16 @@ export default function Layout({ children }) {
                 {user && user.role !== 'admin' && (
                   <li><Link to={createPageUrl('SubmitInstallation')} className="hover:text-foreground">Submit Installation</Link></li>
                 )}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Resources</h4>
+              <ul className="space-y-2 text-muted-foreground">
+                <li><Link to={createPageUrl('LoadCalculator')} className="hover:text-foreground">Load Calculator</Link></li>
+                <li><Link to={createPageUrl('CostBenefit')} className="hover:text-foreground">Cost-Benefit Analysis</Link></li>
+                <li><Link to={createPageUrl('SolarGuide')} className="hover:text-foreground">Solar Guide</Link></li>
+                <li><Link to={createPageUrl('Forum')} className="hover:text-foreground">Community Forum</Link></li>
               </ul>
             </div>
 
