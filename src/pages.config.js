@@ -60,6 +60,7 @@ import Leaderboard from './pages/Leaderboard';
 import LoadCalculator from './pages/LoadCalculator';
 import Login from './pages/Login';
 import SolarGuide from './pages/SolarGuide';
+import SolarInstallation from './pages/SolarInstallation';
 import SubmitInstallation from './pages/SubmitInstallation';
 import __Layout from './Layout.jsx';
 
@@ -78,6 +79,7 @@ export const PAGES = {
     "LoadCalculator": LoadCalculator,
     "Login": Login,
     "SolarGuide": SolarGuide,
+    "SolarInstallation": SolarInstallation,
     "SubmitInstallation": SubmitInstallation,
 }
 

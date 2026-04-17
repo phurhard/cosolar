@@ -14,7 +14,7 @@ import {
 import {
   Sun, BarChart3, Trophy, FileText,
   Menu, X, LogOut, Shield, User, Bell,
-  Calculator, MessageSquare
+  Calculator, MessageSquare, Zap, TrendingUp
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -78,7 +78,6 @@ export default function Layout({ children }) {
     { name: 'Home', path: 'Home', icon: Sun },
     { name: 'Analytics', path: 'Analytics', icon: BarChart3 },
     { name: 'Leaderboard', path: 'Leaderboard', icon: Trophy },
-    { name: 'Calculator', path: 'LoadCalculator', icon: Calculator },
     { name: 'Forum', path: 'Forum', icon: MessageSquare },
   ];
   const authenticatedNavItems = user
@@ -138,6 +137,38 @@ export default function Layout({ children }) {
                   {item.name}
                 </Link>
               ))}
+
+              {/* Tools Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`gap-2 h-9 px-4 rounded-lg font-medium transition-colors ${
+                      ['LoadCalculator', 'SolarInstallation', 'CostBenefit'].some(p => isActive(p))
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <Calculator className="w-4 h-4" />
+                    Tools
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem onSelect={() => navigate(createPageUrl('LoadCalculator'))}>
+                    <Zap className="w-4 h-4 mr-2 text-amber-500" />
+                    Load Calculator
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate(createPageUrl('SolarInstallation'))}>
+                    <Sun className="w-4 h-4 mr-2 text-primary" />
+                    Solar Sizing
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => navigate(createPageUrl('CostBenefit'))}>
+                    <TrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                    Cost-Benefit Analysis
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             {/* Right Side */}
@@ -254,6 +285,34 @@ export default function Layout({ children }) {
                   {item.name}
                 </Link>
               ))}
+
+              <div className="pt-2 pb-2 space-y-1">
+                <p className="px-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2 mt-4 ml-1">Tools</p>
+                <Link
+                  to={createPageUrl('LoadCalculator')}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${isActive('LoadCalculator') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Zap className="w-5 h-5 text-amber-500" />
+                  Load Calculator
+                </Link>
+                <Link
+                  to={createPageUrl('SolarInstallation')}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${isActive('SolarInstallation') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Sun className="w-5 h-5 text-primary" />
+                  Solar Sizing
+                </Link>
+                <Link
+                  to={createPageUrl('CostBenefit')}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${isActive('CostBenefit') ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                >
+                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                  Cost-Benefit Analysis
+                </Link>
+              </div>
               <div className="pt-4 border-t border-border space-y-2">
                 {user ? (
                   <>
@@ -345,6 +404,7 @@ export default function Layout({ children }) {
               <h4 className="font-semibold text-foreground mb-4">Resources</h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li><Link to={createPageUrl('LoadCalculator')} className="hover:text-foreground">Load Calculator</Link></li>
+                <li><Link to={createPageUrl('SolarInstallation')} className="hover:text-foreground">Solar Installation Sizing</Link></li>
                 <li><Link to={createPageUrl('CostBenefit')} className="hover:text-foreground">Cost-Benefit Analysis</Link></li>
                 <li><Link to={createPageUrl('SolarGuide')} className="hover:text-foreground">Solar Guide</Link></li>
                 <li><Link to={createPageUrl('Forum')} className="hover:text-foreground">Community Forum</Link></li>

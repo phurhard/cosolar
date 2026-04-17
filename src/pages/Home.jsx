@@ -7,6 +7,7 @@ import StorySection from '../components/home/StorySection';
 import ImpactStories from '../components/home/ImpactStories';
 import MissionSection from '../components/home/MissionSection';
 import FeaturesSection from '../components/home/FeaturesSection';
+import CalculatorsSection from '../components/home/CalculatorsSection';
 import CTASection from '../components/home/CTASection';
 
 export default function Home() {
@@ -38,6 +39,7 @@ export default function Home() {
       <StatsSection stats={stats} />
       <ImpactStories />
       <MissionSection />
+      <CalculatorsSection />
       <FeaturesSection />
       <CTASection />
     </div>
