@@ -122,6 +122,16 @@
     "rejection_reason": {
       "type": "string",
       "description": "Reason if rejected"
+    },
+    "project_cost": {
+      "type": "number",
+      "description": "Total project cost in the selected currency for regional cost tracking across Africa"
+    },
+    "project_cost_currency": {
+      "type": "string",
+      "enum": ["NGN", "USD", "GBP", "GHS", "EUR"],
+      "default": "NGN",
+      "description": "Currency code for the project cost (e.g. NGN, USD, GBP, GHS, EUR)"
     }
   },
   "required": [

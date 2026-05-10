@@ -15,9 +15,44 @@ import { format } from 'date-fns';
 import { COUNTRIES, INSTALLATION_TYPES } from '@/lib/constants';
 
 const batteryTypes = ['Lithium-ion', 'Lead-acid', 'Gel', 'AGM', 'LiFePO4', 'None'];
-const inverterBrands = ['Victron', 'SMA', 'Fronius', 'Growatt', 'Huawei', 'Deye', 'Sunsynk', 'Felicity', 'Other'];
+const inverterBrands = [
+  'Deye', 'Solis', 'SRNE', 'Cworth', 'Itel', 'SMS', 'Colar', 'Kartel',
+  'Blue Carbon', 'SMA', 'Felicity', 'Luminous', 'Growatt', 'Growvolt',
+  'Victron Energy', 'Blue Gate', 'DYness', 'Huawei', 'Sako', 'Sunsynk',
+  'Fronius', 'Other',
+];
 const solarPanelBrands = ['Jinko', 'Canadian Solar', 'Longi', 'Trina', 'JA Solar', 'SunPower', 'Other'];
-const batteryBrands = ['Pylontech', 'BYD', 'Felicity', 'LG Chem', 'Tesla', 'KiloVault', 'Other'];
+const batteryBrands = [
+  'Deye', 'Solis', 'SRNE', 'Cworth', 'Itel', 'SMS', 'Colar',
+  'Blue Carbon', 'SMA', 'Felicity', 'Luminous', 'Growatt', 'Growvolt',
+  'Victron Energy', 'Blue Gate', 'DYness', 'Huawei', 'Sako',
+  'BYD', 'Pylontech', 'LG Chem', 'Tesla', 'KiloVault', 'Other',
+];
+
+/**
+ * Derives the official currency symbol for any ISO 4217 code
+ * using the native Intl API — no package required.
+ * @param {string} code ISO 4217 currency code e.g. 'NGN'
+ * @returns {string}
+ */
+function getCurrencySymbol(code) {
+  try {
+    return Intl.NumberFormat('en', { style: 'currency', currency: code, minimumFractionDigits: 0 })
+      .formatToParts(0)
+      .find(p => p.type === 'currency')
+      ?.value ?? code;
+  } catch {
+    return code;
+  }
+}
+
+const CURRENCIES = [
+  { code: 'NGN', label: 'Nigerian Naira' },
+  { code: 'USD', label: 'US Dollar' },
+  { code: 'GBP', label: 'British Pounds' },
+  { code: 'GHS', label: 'Ghana Cedis' },
+  { code: 'EUR', label: 'Euro' },
+].map(c => ({ ...c, symbol: getCurrencySymbol(c.code) }));
 
 /**
  * @typedef {Object} InstallationFormData
@@ -38,6 +73,8 @@ const batteryBrands = ['Pylontech', 'BYD', 'Felicity', 'LG Chem', 'Tesla', 'Kilo
  * @property {string} inverter_capacity_kva
  * @property {string} inverter_brand
  * @property {string} installation_date
+ * @property {string} project_cost
+ * @property {string} project_cost_currency
  */
 
 export default function SubmitInstallation() {
@@ -66,6 +103,8 @@ export default function SubmitInstallation() {
     inverter_capacity_kva: '',
     inverter_brand: '',
     installation_date: format(new Date(), 'yyyy-MM-dd'),
+    project_cost: '',
+    project_cost_currency: 'NGN',
   });
 
   const { data: myProfile } = useQuery({
@@ -106,6 +145,8 @@ export default function SubmitInstallation() {
         inverter_capacity_kva: existingInstallation.inverter_capacity_kva?.toString() || '',
         inverter_brand: existingInstallation.inverter_brand || '',
         installation_date: existingInstallation.installation_date || format(new Date(), 'yyyy-MM-dd'),
+        project_cost: existingInstallation.project_cost?.toString() || '',
+        project_cost_currency: existingInstallation.project_cost_currency || 'NGN',
       });
     }
   }, [existingInstallation]);
@@ -165,6 +206,8 @@ export default function SubmitInstallation() {
       inverter_capacity_kva: parseFloat(formData.inverter_capacity_kva) || 0,
       carbon_offset_tons_annual: carbonOffsetAnnual,
       carbon_offset_lifetime: carbonOffsetLifetime,
+      project_cost: parseFloat(formData.project_cost) || null,
+      project_cost_currency: formData.project_cost_currency || 'NGN',
       status: 'pending',
     };
 
@@ -483,6 +526,55 @@ export default function SubmitInstallation() {
                   </div>
                 </div>
               )}
+
+              {/* Project Cost */}
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <span className="text-xl">💰</span>
+                  Project Cost
+                </h3>
+                <div className="space-y-3">
+                  <Label>Total Project Cost</Label>
+                  <div className="flex gap-2">
+                    {/* Currency selector */}
+                    <Select
+                      value={formData.project_cost_currency}
+                      onValueChange={(v) => updateField('project_cost_currency', v)}
+                    >
+                      <SelectTrigger className="bg-background w-36 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map(c => (
+                          <SelectItem key={c.code} value={c.code}>
+                            <span className="font-mono mr-1">{c.symbol}</span>
+                            {c.code} — {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {/* Amount input with dynamic symbol prefix */}
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono font-medium select-none">
+                        {CURRENCIES.find(c => c.code === formData.project_cost_currency)?.symbol ?? ''}
+                      </span>
+                      <Input
+                        id="project_cost"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.project_cost}
+                        onChange={(e) => updateField('project_cost', e.target.value)}
+                        placeholder="e.g., 500,000"
+                        className="bg-background pl-7"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Track total installation cost across Africa for market insights. This data is used for regional cost analysis.
+                  </p>
+                </div>
+              </div>
 
               <div className="pt-4 border-t border-border">
                 <Button
